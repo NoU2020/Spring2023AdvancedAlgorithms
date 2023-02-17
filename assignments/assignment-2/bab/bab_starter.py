@@ -125,5 +125,24 @@ class BBTreeNode():
 
         #TODO:
         # Implement your solution here!
+        while heap:
+        # take the next node off the heap
+            node = heap.heappop(heap)[2]
 
+        # check if the node is integral
+        if node.is_integral():
+            # if it is, update the best feasible solution if necessary
+            if node.prob.obj_value() > bestres:
+                bestres = node.prob.obj_value()
+                bestnode_vars = [v.value for v in node.vars]
+        else:
+            # if it is not integral, branch on a non-integral variable
+            for i, var in enumerate(node.vars[:-1]):
+                if var.value is not None and abs(round(var.value) - var.value) > 1e-4:
+                    # if var is not integral, create two children nodes by branching on var
+                    n1 = node.branch_floor(var)
+                    n2 = node.branch_ceil(var)
+
+                    # add children nodes to heap, ordered by lower bound of objective
+                    heap.extend([(n1.prob.obj_value(), next(counter), n1), (n2.prob.obj_value(), next(counter), n2)])
         return bestres, bestnode_vars
